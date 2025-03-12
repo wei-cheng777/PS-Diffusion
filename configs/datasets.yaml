@@ -1,0 +1,16 @@
+Train:
+  Mydataset:
+    image_dir: /home/u1120210216/wwc/datasets/final/process_data
+
+
+
+# Test:
+#   DreamBooth:
+#     fg_dir: path/DreamBooth/AnyDoor_DreamBooth
+#     bg_dir: path/DreamBooth/v1_800
+
+#   VitonHDTest:
+#     image_dir: path/TryOn/VitonHD/test/cloth
+
+
+
