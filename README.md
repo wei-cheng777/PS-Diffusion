@@ -18,7 +18,7 @@
 
 
 <a href='https://github.com/wei-cheng777/PS-Diffusion'><img src='https://img.shields.io/badge/Project_Page-PS--Diffusion-green' alt='Project Page'></a>
-<a href='https://zhongqihebut.github.io/ps_diffusion/'><img src='https://img.shields.io/badge/Demo_Page-PS--Diffusion-red' alt='Project Page'></a>
+<a href='https://github.com/wei-cheng777/PS-Diffusion'><img src='https://img.shields.io/badge/Demo_Page-PS--Diffusion-red' alt='Project Page'></a>
 
 
 ## Abstract
