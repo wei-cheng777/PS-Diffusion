@@ -20,13 +20,15 @@
 
 <a href='https://github.com/wei-cheng777/PS-Diffusion'><img src='https://img.shields.io/badge/Project_Page-PS--Diffusion-green' alt='Project Page'></a>
 <a href='https://zhongqihebut.github.io/ps_diffusion/'><img src='https://img.shields.io/badge/Demo_Page-PS--Diffusion-red' alt='Project Page'></a>
-</div>
+
 
 ![Figure1](./figure1.png)
 Figure 1. Results from our proposed Replace-5K and real-world data in DreamBooth are shown.
 
 ![Figure2](./pipeline.png)
 Figure 2. Pipeline of our method.
+
+</div>
 
 ## 1. News
 
