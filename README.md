@@ -22,8 +22,6 @@
 
 
 ![Figure1](./figure1.png)
-Figure 1. Results from our proposed Replace-5K and real-world data in DreamBooth are shown.
-
 ## Abstract
 **Diffusion models pre-trained on large-scale paired image-text data achieve significant success in image editing. To convey more fine-grained visual details, subject-driven editing integrates subjects in user-provided reference images into existing scenes. However, it is challenging to obtain photorealistic results, which simulate contextual interactions, such as reflections, illumination, and shadows, induced by merging the target object into the source image. To address this issue, we propose PS-Diffusion, which ensures realistic and consistent object-scene blending while maintaining the invariance of subject appearance during editing. To be specific, we first divide the contextual interactions into those occurring in the foreground and the background areas. The effect of the former is estimated through intrinsic image decomposition, and the region of the latter is predicted in an additional background effect control branch. Moreover, we propose an effect attention module to disentangle the learning processes of interaction and subject, alleviating confusion between them. Additionally, we introduce a synthesized dataset, Replace-5K, consisting of 5,000 image pairs with invariant subject and contextual interactions via 3D rendering. Extensive quantitative and qualitative experiments on our dataset and two real-world datasets demonstrate that our method achieves state-of-the-art performance.**
 
@@ -31,7 +29,7 @@ Figure 1. Results from our proposed Replace-5K and real-world data in DreamBooth
 
 ## 1. News
 
-* **2025-02-27:** The PS-Diffusion repo is created！
+* **2025-03-19:** The PS-Diffusion repo is created！
 
 
 
@@ -61,14 +59,14 @@ pip install -r requirements.txt
 
 We introduce an exquisite synthetic dataset, Replace-5k, comprising 5,000 image pairs that simulate the physical effects of various scenes on objects.
 
-| Datasets | [BaiduNetdisk]https://pan.baidu.com/s/1xDFDkWnOOQXubqETX1IKkg?pwd=jkak |
+| Datasets | [BaiduNetdisk](https://pan.baidu.com/s/1xDFDkWnOOQXubqETX1IKkg?pwd=jkak) |
 | :------: | :----------------------------------------------------------: |
 
 ##### Weights:
 
 The weights we trained can be downloaded via the link below. You should create a folder named 'weights' under the project directory and put the two weights files in this folder
 
-| Weights |[BaiduNetdisk]https://pan.baidu.com/s/1QBmeLGl_rkVJM0SA08hkvw?pwd=amve|
+| Weights |[BaiduNetdisk](https://pan.baidu.com/s/1QBmeLGl_rkVJM0SA08hkvw?pwd=amve)|
 | :-----: | :----------------------------------------------------------: |
 
 ##### 
