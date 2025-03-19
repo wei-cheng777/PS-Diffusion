@@ -29,6 +29,8 @@
 
 ## 1. News
 
+* **2025-03-19:** The processed dataset Replace-5K have been made public！
+* **2025-03-19:** The trained weights of PS-Diffusion have been made public！
 * **2025-03-19:** The PS-Diffusion repo is created！
 
 
