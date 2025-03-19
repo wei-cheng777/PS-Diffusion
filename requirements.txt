@@ -1,0 +1,7 @@
+xformers==0.0.27.post2
+torch==2.4.0
+timm==0.4.12
+diffusers== 0.31.0
+pytorch-lightning ==1.5.0
+transformers==4.46.3
+accelerate==0.33.0
