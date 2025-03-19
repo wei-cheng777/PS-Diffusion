@@ -99,7 +99,7 @@ bash run_inf.sh
 
 If you have any questions, please feel free to contact me:
 
-2120230639@mail.nankai.edu.cn
+1394828098wwc@gmail.com or 2120230639@mail.nankai.edu.cn
 
 ## Acknowledgements
 This project is based on the codebase of [ControlNet](https://github.com/lllyasviel/ControlNet) and [AnyDoor](https://github.com/ali-vilab/AnyDoor). We  appreciate these great works! 
