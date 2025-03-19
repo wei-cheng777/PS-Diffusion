@@ -33,9 +33,12 @@
 * **2025-03-19:** The trained weights of PS-Diffusion have been made public！
 * **2025-03-19:** The PS-Diffusion repo is created！
 
+## 2. TODO List
 
+- [x] Dataset release
+- [x] Weight release
 
-## 2. Get Start
+## 3. Get Start
 
 
 
@@ -84,6 +87,7 @@ Change the path to line 1 and 2 of/config/inference.yaml
 #### 4. Inference for examples
 
 ~~~
+# We provide test examples in the examples folder
 bash run_inf.sh
 ~~~
 
@@ -95,7 +99,7 @@ If you have any questions, please feel free to contact me:
 2120230639@mail.nankai.edu.cn
 
 ## Acknowledgements
-This project is based on the codebase of [ControlNet](https://github.com/lllyasviel/ControlNet) and [AnyDoor](https://github.com/ali-vilab/AnyDoor). We  appreciate these great work! 
+This project is based on the codebase of [ControlNet](https://github.com/lllyasviel/ControlNet) and [AnyDoor](https://github.com/ali-vilab/AnyDoor). We  appreciate these great works! 
 
 
 
