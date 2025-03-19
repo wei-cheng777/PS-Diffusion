@@ -92,6 +92,8 @@ If you have any questions, please feel free to contact me:
 
 2120230639@mail.nankai.edu.cn
 
+## Acknowledgements
+This project is based on the codebase of [ControlNet](https://github.com/lllyasviel/ControlNet) and [AnyDoor](https://github.com/ali-vilab/AnyDoor). We  appreciate these great work! 
 
 
 
