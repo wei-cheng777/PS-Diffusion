@@ -3,9 +3,8 @@ import einops
 import numpy as np
 import torch
 import random
-from pytorch_lightning import seed_everything
 from cldm.model import create_model, load_state_dict
-from cldm.ddim_hacked import DDIMSampler
+from cldm.ddim_hacked1 import DDIMSampler
 from cldm.hack import disable_verbosity, enable_sliced_attention
 from datasets1.data_utils import * 
 cv2.setNumThreads(0)
@@ -15,21 +14,18 @@ from omegaconf import OmegaConf
 from PIL import Image
 
 def extract_with_mask(image, mask):
-
     image_array = image
-    mask_array = mask 
+    mask_array = mask
     
     extracted_image = Image.fromarray(np.where(mask_array[..., None] > 0, image_array, 0).astype(np.uint8))
     bbox = get_bbox(mask_array)
+    
     image_cropped = extracted_image.crop((bbox[1], bbox[0], bbox[3], bbox[2]))
     mask_cropped = (Image.fromarray(mask_array).crop((bbox[1], bbox[0], bbox[3], bbox[2]))).convert('L')
     
     return image_cropped, mask_cropped, bbox
 
 def get_bbox(mask_array):
-    """
-    根据mask获得包围盒
-    """
     coords = np.column_stack(np.where(mask_array > 0))
     bbox = [coords[:,0].min(), coords[:,1].min(), coords[:,0].max(), coords[:,1].max()]
     return bbox
@@ -39,13 +35,15 @@ if save_memory:
     enable_sliced_attention()
 
 
-config = OmegaConf.load('/home/u1120210216/wwc/psdiffusion/configs/inference.yaml')
+config = OmegaConf.load('configs/inference1.yaml')
 model_ckpt =  config.pretrained_model
 model_config = config.config_file
 
 model = create_model(model_config ).cpu()
+# print(load_state_dict(model_ckpt, location='cuda'))
 model.load_state_dict(load_state_dict(model_ckpt, location='cuda'))
 model = model.cuda()
+print(model)
 model.eval()
 ddim_sampler = DDIMSampler(model)
 
@@ -63,28 +61,11 @@ def aug_data_mask(image, mask):
 
 def process_pairs(ref_image, ref_mask, tar_image, tar_mask, gt_image, gt_mask,gt_effect,ini_effect,back_image,reference_image_albedo,reference_image_normal,gt_shading,raw_norm,raw_shading, max_ratio = 0.8):
         ref_mask_ori = ref_mask*255
-        # gt_effect = gt_effect.resize((512, 512))
-        # ini_effect = ini_effect.resize((512, 512))
-        # ========= Reference ===========
-        '''
-        # similate the case that the mask for reference object is coarse. Seems useless :(
-
-        if np.random.uniform(0, 1) < 0.7: 
-            ref_mask_clean = ref_mask.copy()
-            ref_mask_clean = np.stack([ref_mask_clean,ref_mask_clean,ref_mask_clean],-1)
-            ref_mask = perturb_mask(ref_mask, 0.6, 0.9)
-            
-            # select a fake bg to avoid the background leakage
-            fake_target = tar_image.copy()
-            h,w = ref_image.shape[0], ref_image.shape[1]
-            fake_targe = cv2.resize(fake_target, (w,h))
-            fake_back = np.fliplr(np.flipud(fake_target))
-            fake_back = self.aug_data_back(fake_back)
-            ref_image = ref_mask_clean * ref_image + (1-ref_mask_clean) * fake_back
-        '''
 
         # Get the outline Box of the reference image
         ref_box_yyxx = get_bbox_from_mask(ref_mask)
+        #print(self.check_region_size(ref_mask, ref_box_yyxx, ratio = 0.10, mode = 'min') == True)
+        #assert self.check_region_size(ref_mask, ref_box_yyxx, ratio = 0.10, mode = 'min') == True
         
         gt_mask1_box_yyxx = get_bbox_from_mask(gt_mask)
         gt_mask1_3 = np.stack([gt_mask,gt_mask,gt_mask],-1)
@@ -178,7 +159,10 @@ def process_pairs(ref_image, ref_mask, tar_image, tar_mask, gt_image, gt_mask,gt
         tar_box_yyxx_crop = box2squre(tar_image, tar_box_yyxx_crop) # crop box
         y1,y2,x1,x2 = tar_box_yyxx_crop
         
-
+        # cropped_target_image = tar_image[y1:y2,x1:x2,:]
+        # cropped_tar_mask = tar_mask[y1:y2,x1:x2]
+        # cropped_gt_mask = gt_mask[y1:y2,x1:x2]*255
+        # cropped_gt_image = gt_image[y1:y2,x1:x2,:]
         cropped_target_image = tar_image
         cropped_tar_mask = tar_mask
         cropped_gt_mask = gt_mask*255
@@ -191,6 +175,9 @@ def process_pairs(ref_image, ref_mask, tar_image, tar_mask, gt_image, gt_mask,gt
         #cropped_image1, cropped_mask1, bbox1 = extract_with_mask(ref_image_collage_224, ref_mask_compose)
         #cropped_image1, cropped_mask1, bbox1 = extract_with_mask(reference_image_albedo, ref_mask_ori)
         cropped_image1, cropped_mask1, bbox1 = extract_with_mask(ref_image, ref_mask_ori)
+        #####如果使用sobel
+        # cropped_image1 = sobel(np.array(cropped_image1), np.array(cropped_mask1)/255)
+        # cropped_image1 = Image.fromarray(cropped_image1)
         
 
         # Prepairing collage image
@@ -382,39 +369,25 @@ def inference_single_image(ref_image, ref_mask, tar_image, tar_mask,gt_image, gt
     guess_mode = False
     H,W = 512,512
 
-    cond = {"c_concat": [control], "c_crossattn": [(model.get_learned_conditioning( clip_input, raw_shading,raw_norm, ref_normal, gt, gt_shading,ref_ori))[0]],"c_crossattn1": [(model.get_learned_conditioning( clip_input, raw_shading,raw_norm, ref_normal, gt, gt_shading,ref_ori))[-1]],'c_concat_mask':[control_mask, raw_collage, gt_mask, raw_reference, back_image]}
-    un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [(model.get_learned_conditioning([torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples))[0]],"c_crossattn1": [(model.get_learned_conditioning([torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples))[-1]],"c_concat_mask": None if guess_mode else [control_mask, raw_collage, gt_mask, raw_reference, back_image]}
+    cond = {"c_concat": [control], "c_crossattn": [(model.get_learned_conditioning( clip_input, raw_shading,raw_norm, ref_normal, gt, gt_shading,ref_ori))[0]],'c_concat_mask':[control_mask, raw_collage, gt_mask, raw_reference, back_image]}
+    un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [(model.get_learned_conditioning([torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples))[0]],"c_concat_mask": None if guess_mode else [control_mask, raw_collage, gt_mask, raw_reference, back_image]}
     shape = (4, H // 8, W // 8)
 
     if save_memory:
         model.low_vram_shift(is_diffusing=True)
 
     # ====
-    num_samples = 1 #gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
-    image_resolution = 512  #gr.Slider(label="Image Resolution", minimum=256, maximum=768, value=512, step=64)
-    strength = 1  #gr.Slider(label="Control Strength", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
-    guess_mode = False #gr.Checkbox(label='Guess Mode', value=False)
-    #detect_resolution = 512  #gr.Slider(label="Segmentation Resolution", minimum=128, maximum=1024, value=512, step=1)
-    ddim_steps = 50 #gr.Slider(label="Steps", minimum=1, maximum=100, value=20, step=1)
-    scale = guidance_scale  #gr.Slider(label="Guidance Scale", minimum=0.1, maximum=30.0, value=9.0, step=0.1)
-    seed = -1  #gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, randomize=True)
-    eta = 0.0 #gr.Number(label="eta (DDIM)", value=0.0)
-
+    num_samples = 1 
+    strength = 1  
+    guess_mode = False 
+    ddim_steps = 50 
+    scale = guidance_scale  
+    eta = 0.0 
     model.control_scales = [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)  # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-    samples, intermediates, mask_predict = ddim_sampler.sample(ddim_steps, num_samples,
+    samples, _, _ = ddim_sampler.sample(ddim_steps, num_samples,
                                                     shape, cond, verbose=False, eta=eta,
                                                     unconditional_guidance_scale=scale,
                                                     unconditional_conditioning=un_cond)
-    # print(mask_predict.shape)
-    # print(aaaa)
-    mask_predict = mask_predict.cpu().squeeze().numpy()
-    normalized_array = mask_predict*255
-    #normalized_array = (mask_predict - mask_predict.min()) / (mask_predict.max() - mask_predict.min()) * 255
-    normalized_array = normalized_array.astype('uint8')
-    normalized_array = cv2.cvtColor(normalized_array, cv2.COLOR_GRAY2BGR)
-    normalized_array = cv2.resize(normalized_array, (1024, 1024))
-    # Save as image
-    # image = Image.fromarray(normalized_array)    
     
     if save_memory:
         model.low_vram_shift(is_diffusing=False)
@@ -430,105 +403,78 @@ def inference_single_image(ref_image, ref_mask, tar_image, tar_mask,gt_image, gt
     sizes = item['extra_sizes']
     tar_box_yyxx_crop = item['tar_box_yyxx_crop'] 
     gen_image = crop_back(pred, tar_image, sizes, tar_box_yyxx_crop) 
-    #print(gen_image.shape,normalized_array.shape)
-    return gen_image,normalized_array
+    return gen_image
 def set_seed(seed):
     torch.manual_seed(seed)  
     torch.cuda.manual_seed(seed)  
     torch.cuda.manual_seed_all(seed)  
     np.random.seed(seed)  
-    random.seed(seed) 
-
+    random.seed(seed)  
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-if __name__ == '__main__': 
+import argparse
+import os
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Process images for POI recognition.")
+    parser.add_argument('--save_dir', type=str, required=True, help="Directory to save generated images.")
+    parser.add_argument('--path', type=str, required=True, help="Path to the dataset directory.")
+    parser.add_argument('--random_integer', type=int, default=12345, help="Random seed for reproducibility.")
 
-    from omegaconf import OmegaConf
-    import os 
-    # DConf = OmegaConf.load('./configs/datasets.yaml')
-    save_dir = '/home/u1120210216/wwc/psdiffusion/'
+    args = parser.parse_args()
+
+    save_dir = args.save_dir
+    path = args.path
+    random_integer = args.random_integer
+
     if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+        os.makedirs(save_dir)
 
-    # test_dir = DConf.Test.VitonHDTest.image_dir
-    # image_names = os.listdir(test_dir)
-    path = '/home/u1120210216/wwc/datasets/process_data2'
-    for i in os.listdir(path):
-    #for i in range(1,89):
-        # for image_name in image_names:
-        random_integer = 12345
-        set_seed(random_integer)
-        ref_image_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/reference_image.png'.format(i)
-        tar_image_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/raw_image.png'.format(i)
-        ref_mask_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/reference_mask.png'.format(i)
-        tar_mask_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/raw_mask.png'.format(i)
-        gt_mask_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/ground_truth_mask.png'.format(i)
-        gt_image_path='/home/u1120210216/wwc/datasets/process_data2/{:}/raw_image.png'.format(i)
-        back_image_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/masked_raw_image.png'.format(i)
-        gt_effect_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/effect_mask.png'.format(i)
-        ini_effect_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/raw_image_shadow.png'.format(i)        
+    # for i in os.listdir(path):
+    set_seed(random_integer)
 
-        reference_image_albedo_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/reference_image_albedo.png'.format(i)
-        reference_image_normal_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/reference_image_normal.png'.format(i) 
-        ground_truth_shading_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/raw_image_shading.png'.format(i) 
-        raw_image_normal_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/raw_image_normal.png'.format(i) 
-        raw_image_shading_path = '/home/u1120210216/wwc/datasets/process_data2/{:}/raw_image_shading.png'.format(i) 
+    ref_image_path = os.path.join(path, "reference_image.png")
+    tar_image_path = os.path.join(path, "raw_image.png")
+    ref_mask_path = os.path.join(path, "reference_mask.png")
+    tar_mask_path = os.path.join(path, "raw_mask.png")
+    gt_mask_path = os.path.join(path,  "ground_truth_mask.png")
+    gt_image_path = os.path.join(path,  "raw_image.png")
+    back_image_path = os.path.join(path, "masked_raw_image.png")
+    gt_effect_path = os.path.join(path, "raw_image_shadow.png")
+    ini_effect_path = os.path.join(path, "raw_image_shadow.png")
 
-        gen_path = os.path.join(save_dir, '{:}.png'.format(i))
-        if os.path.exists(gen_path):
-            continue
-        raw_image_shading = Image.open(raw_image_shading_path ).convert('RGB').resize((224,224))
-        raw_image_shading= np.array(raw_image_shading)
-        
-        raw_image_normal = Image.open(raw_image_normal_path ).convert('RGB').resize((224,224))
-        raw_image_normal= np.array(raw_image_normal)        
+    reference_image_albedo_path = os.path.join(path, "reference_image_albedo.png")
+    reference_image_normal_path = os.path.join(path, "reference_image_normal.png")
+    ground_truth_shading_path = os.path.join(path, "raw_image_shading.png")
+    raw_image_normal_path = os.path.join(path, "raw_image_normal.png")
+    raw_image_shading_path = os.path.join(path, "raw_image_shading.png")
 
-        ground_truth_shading = cv2.imread(ground_truth_shading_path)
-        ground_truth_shading = cv2.cvtColor(ground_truth_shading, cv2.COLOR_BGR2RGB)
+    gen_path = os.path.join(save_dir, f"{path.split('/')[-1]}.png")
 
-        reference_image_albedo = cv2.imread(reference_image_albedo_path)
-        reference_image_albedo = cv2.cvtColor(reference_image_albedo, cv2.COLOR_BGR2RGB)
+    raw_image_shading = np.array(Image.open(raw_image_shading_path).convert('RGB').resize((224, 224)))
+    raw_image_normal = np.array(Image.open(raw_image_normal_path).convert('RGB').resize((224, 224)))
 
-        reference_image_normal = cv2.imread(reference_image_normal_path)
-        reference_image_normal = cv2.cvtColor(reference_image_normal, cv2.COLOR_BGR2RGB)
-        
-        ref_image = cv2.imread(ref_image_path)
-        ref_image = cv2.cvtColor(ref_image, cv2.COLOR_BGR2RGB)
+    ground_truth_shading = cv2.cvtColor(cv2.imread(ground_truth_shading_path), cv2.COLOR_BGR2RGB)
+    reference_image_albedo = cv2.cvtColor(cv2.imread(reference_image_albedo_path), cv2.COLOR_BGR2RGB)
+    reference_image_normal = cv2.cvtColor(cv2.imread(reference_image_normal_path), cv2.COLOR_BGR2RGB)
 
-        tar_image = cv2.imread(tar_image_path)
-        tar_image = cv2.cvtColor(tar_image, cv2.COLOR_BGR2RGB)
+    ref_image = cv2.cvtColor(cv2.imread(ref_image_path), cv2.COLOR_BGR2RGB)
+    tar_image = cv2.cvtColor(cv2.imread(tar_image_path), cv2.COLOR_BGR2RGB)
 
-        ref_mask = (cv2.imread(ref_mask_path) > 128).astype(np.uint8)[:,:,0]
+    ref_mask = (cv2.imread(ref_mask_path) > 128).astype(np.uint8)[:, :, 0]
 
-        tar_mask = Image.open(tar_mask_path ).convert('P')
-        tar_mask= np.array(tar_mask)
-        tar_mask = np.where(tar_mask > 128, 1, 0).astype(np.uint8)
+    tar_mask = np.where(np.array(Image.open(tar_mask_path).convert('P')) > 128, 1, 0).astype(np.uint8)
+    gt_mask = np.where(np.array(Image.open(gt_mask_path).convert('P')) > 128, 1, 0).astype(np.uint8)
 
-        gt_mask = Image.open(gt_mask_path ).convert('P')
-        gt_mask= np.array(gt_mask)
-        gt_mask = np.where(gt_mask > 128, 1, 0).astype(np.uint8)
+    gt_image = cv2.cvtColor(cv2.imread(gt_image_path), cv2.COLOR_BGR2RGB)
 
-        gt_image = cv2.imread(gt_image_path)
-        gt_image = cv2.cvtColor(gt_image, cv2.COLOR_BGR2RGB)
+    gt_effect = np.where(np.array(Image.open(gt_effect_path).convert('P').resize((512, 512))) > 128, 1, 0).astype(np.uint8)
+    ini_effect = np.where(np.array(Image.open(ini_effect_path).convert('P').resize((512, 512))) > 128, 1, 0).astype(np.uint8)
 
-        gt_effect = Image.open(gt_effect_path).convert('P').resize((512,512))
-        gt_effect= np.array(gt_effect)
-        gt_effect = np.where(gt_effect > 128, 1, 0).astype(np.uint8)
+    back_image = np.array(Image.open(back_image_path).convert('RGB').resize((512, 512))).astype(np.uint8)
 
-        ini_effect = Image.open(ini_effect_path).convert('P').resize((512,512))
-        ini_effect= np.array(ini_effect)
-        ini_effect = np.where(ini_effect > 128, 1, 0).astype(np.uint8)
-        
-        back_image = Image.open(back_image_path).convert('RGB').resize((512,512))
-        back_image= np.array(back_image).astype(np.uint8)
+    gen_image = inference_single_image(ref_image, ref_mask, tar_image.copy(), tar_mask, gt_image, gt_mask, gt_effect, ini_effect, back_image, reference_image_albedo, reference_image_normal, ground_truth_shading, raw_image_normal, raw_image_shading)
 
-        gen_image,mask = inference_single_image(ref_image, ref_mask, tar_image.copy(), tar_mask, gt_image,gt_mask,gt_effect, ini_effect,back_image,reference_image_albedo,reference_image_normal,ground_truth_shading,raw_image_normal,raw_image_shading)
-        gen_path = os.path.join(save_dir, '{:}.png'.format(i))
-
-        vis_image = cv2.hconcat([ref_image, tar_image, gen_image,gt_image,mask])
-        cv2.imwrite(gen_path, vis_image[:,:,::-1])
-    #'''
-
-    
+    vis_image = cv2.hconcat([ref_image, tar_image, gen_image, gt_image])
+    cv2.imwrite(gen_path, vis_image[:, :, ::-1])
 
