@@ -27,18 +27,21 @@
 
 </div>
 
-## 1. News
+## News
 
 * **2025-03-19:** The processed dataset Replace-5K have been made public！
 * **2025-03-19:** The trained weights of PS-Diffusion have been made public！
 * **2025-03-19:** The PS-Diffusion repo is created！
 
-## 2. TODO List
+## TODO List
 
+- [ ] Gradio for inference
+- [ ] Detailed training details
+- [ ] Paper release
 - [x] Dataset release
 - [x] Weight release
 
-## 3. Get Start
+## Get Start
 
 
 
