@@ -1,0 +1,16 @@
+python run_inference_one.py --save_dir ./vision_res --path examples/487   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/2934   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/2967   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/104   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/353   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/447   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/455   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/502   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/72   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/275   --random_integer 7677
+python run_inference_one.py --save_dir ./vision_res --path examples/342   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/348   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/456   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/2851   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/304   --random_integer 12345
+python run_inference_one.py --save_dir ./vision_res --path examples/112   --random_integer 12345
