@@ -16,6 +16,7 @@
 
 <sup>5</sup>Nankai International Advanced Research Institute (SHENZHEN·FUTIAN), Shenzhen, China.
 
+<h3>CVPR 2025</h3>
 
 <a href='https://github.com/wei-cheng777/PS-Diffusion'><img src='https://img.shields.io/badge/Project_Page-PS--Diffusion-green' alt='Project Page'></a>
 <a href='https://github.com/wei-cheng777/PS-Diffusion'><img src='https://img.shields.io/badge/Demo_Page-PS--Diffusion-red' alt='Project Page'></a>
@@ -32,6 +33,7 @@
 * **2025-03-19:** The processed dataset Replace-5K have been made public！
 * **2025-03-19:** The trained weights of PS-Diffusion have been made public！
 * **2025-03-19:** The PS-Diffusion repo is created！
+* **2025-02-29:** The PS-Diffusion repo is accepted by CVPR 2025！
 
 ## TODO List
 
