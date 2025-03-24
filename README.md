@@ -33,7 +33,7 @@
 * **2025-03-19:** The processed dataset Replace-5K have been made public！
 * **2025-03-19:** The trained weights of PS-Diffusion have been made public！
 * **2025-03-19:** The PS-Diffusion repo is created！
-* **2025-02-29:** The PS-Diffusion repo is accepted by CVPR 2025！
+* **2025-02-29:** The PS-Diffusion is accepted by CVPR 2025！
 
 ## TODO List
 
