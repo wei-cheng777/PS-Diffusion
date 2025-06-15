@@ -97,6 +97,11 @@ Change the path to line 1 and 2 of/config/inference.yaml
 bash run_inf.sh
 ~~~
 
+#### 5. Training
+
+~~~
+python run_train_psdiffusion.py
+~~~
 
 ## Contact
 
