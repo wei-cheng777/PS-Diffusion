@@ -37,10 +37,9 @@
 
 ## TODO List
 
-- [ ] Flux version release in a few months
 - [ ] Gradio for inference
 - [ ] Detailed training details
-- [ ] Paper release
+- [x] Paper release
 - [x] Dataset release
 - [x] Weight release
 
