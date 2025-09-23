@@ -67,17 +67,17 @@ pip install -r requirements.txt
 
 ##### Datasets:
 
-We introduce an exquisite synthetic dataset, Replace-5k, comprising 5,000 image pairs that simulate the physical effects of various scenes on objects.
+We introduce an exquisite synthetic dataset, Replace-5k, comprising 5,000 image pairs that simulate the physical effects of various scenes on objects. Download it from BaiduNetdisk or Dropbox (file1-file5.zip)
 
-| Datasets | [BaiduNetdisk](https://pan.baidu.com/s/1xDFDkWnOOQXubqETX1IKkg?pwd=jkak) |
-| :------: | :----------------------------------------------------------: |
+| Datasets | [BaiduNetdisk](https://pan.baidu.com/s/1xDFDkWnOOQXubqETX1IKkg?pwd=jkak) | [Dropbox](https://www.dropbox.com/scl/fo/5uy004fyid93lj760acm8/APHDZuiFy8XZ86BuMnZdkK0?rlkey=kf8w1ou3ulnxmggwj3uvrf6st&st=okamjkkx&dl=0) |
+| :------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 
 ##### Weights:
 
 The weights we trained can be downloaded via the link below. You should create a folder named 'weights' under the project directory and put the two weights files in this folder
 
-| Weights |[BaiduNetdisk](https://pan.baidu.com/s/1QBmeLGl_rkVJM0SA08hkvw?pwd=amve)|
-| :-----: | :----------------------------------------------------------: |
+| Weights |[BaiduNetdisk](https://pan.baidu.com/s/1QBmeLGl_rkVJM0SA08hkvw?pwd=amve) | [Dropbox](https://www.dropbox.com/scl/fo/5uy004fyid93lj760acm8/APHDZuiFy8XZ86BuMnZdkK0?rlkey=kf8w1ou3ulnxmggwj3uvrf6st&st=okamjkkx&dl=0) |
+| :-----: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 
 ##### 
 
