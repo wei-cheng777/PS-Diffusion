@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import random
 from cldm.model import create_model, load_state_dict
-from cldm.ddim_hacked1 import DDIMSampler
+from cldm.ddim_hacked import DDIMSampler
 from cldm.hack import disable_verbosity, enable_sliced_attention
 from datasets1.data_utils import * 
 cv2.setNumThreads(0)
@@ -35,7 +35,7 @@ if save_memory:
     enable_sliced_attention()
 
 
-config = OmegaConf.load('configs/inference1.yaml')
+config = OmegaConf.load('configs/inference.yaml')
 model_ckpt =  config.pretrained_model
 model_config = config.config_file
 
@@ -369,8 +369,8 @@ def inference_single_image(ref_image, ref_mask, tar_image, tar_mask,gt_image, gt
     guess_mode = False
     H,W = 512,512
 
-    cond = {"c_concat": [control], "c_crossattn": [(model.get_learned_conditioning( clip_input, raw_shading,raw_norm, ref_normal, gt, gt_shading,ref_ori))[0]],'c_concat_mask':[control_mask, raw_collage, gt_mask, raw_reference, back_image]}
-    un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [(model.get_learned_conditioning([torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples))[0]],"c_concat_mask": None if guess_mode else [control_mask, raw_collage, gt_mask, raw_reference, back_image]}
+    cond = {"c_concat": [control], "c_crossattn": [(model.get_learned_conditioning( clip_input, raw_shading,raw_norm, ref_normal, gt, gt_shading,ref_ori))[0]],"c_crossattn1": [(model.get_learned_conditioning( clip_input, raw_shading,raw_norm, ref_normal, gt, gt_shading,ref_ori))[-1]],'c_concat_mask':[control_mask, raw_collage, gt_mask, raw_reference, back_image]}
+    un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [(model.get_learned_conditioning([torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples))[0]],"c_crossattn1": [(model.get_learned_conditioning([torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples,[torch.zeros((1,3,224,224))] * num_samples))[-1]],"c_concat_mask": None if guess_mode else [control_mask, raw_collage, gt_mask, raw_reference, back_image]}
     shape = (4, H // 8, W // 8)
 
     if save_memory:
@@ -475,6 +475,6 @@ if __name__ == '__main__':
 
     gen_image = inference_single_image(ref_image, ref_mask, tar_image.copy(), tar_mask, gt_image, gt_mask, gt_effect, ini_effect, back_image, reference_image_albedo, reference_image_normal, ground_truth_shading, raw_image_normal, raw_image_shading)
 
-    vis_image = cv2.hconcat([ref_image, tar_image, gen_image, gt_image])
+    vis_image = cv2.hconcat([ref_image, tar_image, gen_image])
     cv2.imwrite(gen_path, vis_image[:, :, ::-1])
 
